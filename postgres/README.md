@@ -17,17 +17,13 @@ WARNING:
 # Supported tags and respective `Dockerfile` links
 
 -	[`12-beta2`, `12`](https://github.com/docker-library/postgres/blob/559d29a4f8158c35d6b50870522f532abbabe3e6/12/Dockerfile)
--	[`12-beta2-alpine`, `12-alpine`](https://github.com/docker-library/postgres/blob/d188180c630836a2ef5bc22f9d5ba4a250e838dd/12/alpine/Dockerfile)
 -	[`11.4`, `11`, `latest`](https://github.com/docker-library/postgres/blob/246f8d41d6de8888ba82f27579bc05d9362a8641/11/Dockerfile)
--	[`11.4-alpine`, `11-alpine`, `alpine`](https://github.com/docker-library/postgres/blob/06813e04bdd11c923fe531b6b73176a0b6a2bb72/11/alpine/Dockerfile)
 -	[`10.9`, `10`](https://github.com/docker-library/postgres/blob/59fd787a41ba4fd042f4d169556e70927c323cda/10/Dockerfile)
--	[`10.9-alpine`, `10-alpine`](https://github.com/docker-library/postgres/blob/e5f137ce4eb3c2fd1190b7ff2db842ebafaa3a6d/10/alpine/Dockerfile)
 -	[`9.6.14`, `9.6`, `9`](https://github.com/docker-library/postgres/blob/033f4941dde868055070eff244f23fd0f7b14ae6/9.6/Dockerfile)
--	[`9.6.14-alpine`, `9.6-alpine`, `9-alpine`](https://github.com/docker-library/postgres/blob/bcfe8611162fb6b9a7190f85e9ae337eeb1057ad/9.6/alpine/Dockerfile)
 -	[`9.5.18`, `9.5`](https://github.com/docker-library/postgres/blob/04626521017c8f1daa3839e3e5d36a606ec98f80/9.5/Dockerfile)
--	[`9.5.18-alpine`, `9.5-alpine`](https://github.com/docker-library/postgres/blob/eb1fa8058f1a0c3864713860392d73a1045f0778/9.5/alpine/Dockerfile)
 -	[`9.4.23`, `9.4`](https://github.com/docker-library/postgres/blob/5c324b9f3e030855e94b00ae72a4936f7915d1be/9.4/Dockerfile)
--	[`9.4.23-alpine`, `9.4-alpine`](https://github.com/docker-library/postgres/blob/d8e907ea048f0f0138769ca91de1a779bf297aca/9.4/alpine/Dockerfile)
+
+[![arm32v5/postgres build status badge](https://img.shields.io/jenkins/s/https/doi-janky.infosiftr.net/job/multiarch/job/arm32v5/job/postgres.svg?label=arm32v5/postgres%20%20build%20job)](https://doi-janky.infosiftr.net/job/multiarch/job/arm32v5/job/postgres/)
 
 # Quick reference
 
@@ -72,7 +68,7 @@ PostgreSQL implements the majority of the SQL:2011 standard, is ACID-compliant a
 ## start a postgres instance
 
 ```console
-$ docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+$ docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d arm32v5/postgres
 ```
 
 The default `postgres` user and database are created in the entrypoint with `initdb`.
@@ -84,7 +80,7 @@ The default `postgres` user and database are created in the entrypoint with `ini
 ## ... or via `psql`
 
 ```console
-$ docker run -it --rm --network some-network postgres psql -h some-postgres -U postgres
+$ docker run -it --rm --network some-network arm32v5/postgres psql -h some-postgres -U postgres
 psql (9.5.0)
 Type "help" for help.
 
@@ -170,7 +166,7 @@ This is an environment variable that is not Docker specific. Because the variabl
 As an alternative to passing sensitive information via environment variables, `_FILE` may be appended to some of the previously listed environment variables, causing the initialization script to load the values for those variables from files present in the container. In particular, this can be used to load passwords from Docker secrets stored in `/run/secrets/<secret_name>` files. For example:
 
 ```console
-$ docker run --name some-postgres -e POSTGRES_PASSWORD_FILE=/run/secrets/postgres-passwd -d postgres
+$ docker run --name some-postgres -e POSTGRES_PASSWORD_FILE=/run/secrets/postgres-passwd -d arm32v5/postgres
 ```
 
 Currently, this is only supported for `POSTGRES_INITDB_ARGS`, `POSTGRES_PASSWORD`, `POSTGRES_USER`, and `POSTGRES_DB`.
@@ -213,13 +209,13 @@ There are many ways to set PostgreSQL server configuration. For information on w
 	$ # customize the config
 
 	$ # run postgres with custom config
-	$ docker run -d --name some-postgres -v "$PWD/my-postgres.conf":/etc/postgresql/postgresql.conf postgres -c 'config_file=/etc/postgresql/postgresql.conf'
+	$ docker run -d --name some-postgres -v "$PWD/my-postgres.conf":/etc/postgresql/postgresql.conf arm32v5/postgres -c 'config_file=/etc/postgresql/postgresql.conf'
 	```
 
 -	Set options directly on the run line. The entrypoint script is made so that any options passed to the docker command will be passed along to the `postgres` server daemon. From the [docs](https://www.postgresql.org/docs/current/static/app-postgres.html) we see that any option available in a `.conf` file can be set via `-c`.
 
 	```console
-	$ docker run -d --name some-postgres postgres -c 'shared_buffers=256MB' -c 'max_connections=200'
+	$ docker run -d --name some-postgres arm32v5/postgres -c 'shared_buffers=256MB' -c 'max_connections=200'
 	```
 
 ## Locale Customization
@@ -227,7 +223,7 @@ There are many ways to set PostgreSQL server configuration. For information on w
 You can extend the image with a simple `Dockerfile` to set a different locale. The following example will set the default locale to `de_DE.utf8`:
 
 ```dockerfile
-FROM postgres:9.4
+FROM arm32v5/postgres:9.4
 RUN localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG de_DE.utf8
 ```
@@ -247,11 +243,11 @@ As of [docker-library/postgres#253](https://github.com/docker-library/postgres/p
 The main caveat to note is that `postgres` doesn't care what UID it runs as (as long as the owner of `/var/lib/postgresql/data` matches), but `initdb` *does* care (and needs the user to exist in `/etc/passwd`):
 
 ```console
-$ docker run -it --rm --user www-data postgres
+$ docker run -it --rm --user www-data arm32v5/postgres
 The files belonging to this database system will be owned by user "www-data".
 ...
 
-$ docker run -it --rm --user 1000:1000 postgres
+$ docker run -it --rm --user 1000:1000 arm32v5/postgres
 initdb: could not look up effective user ID 1000: user does not exist
 ```
 
@@ -262,7 +258,7 @@ The three easiest ways to get around this:
 2.	bind-mount `/etc/passwd` read-only from the host (if the UID you desire is a valid user on your host):
 
 	```console
-	$ docker run -it --rm --user "$(id -u):$(id -g)" -v /etc/passwd:/etc/passwd:ro postgres
+	$ docker run -it --rm --user "$(id -u):$(id -g)" -v /etc/passwd:/etc/passwd:ro arm32v5/postgres
 	The files belonging to this database system will be owned by user "jsmith".
 	...
 	```
@@ -271,12 +267,12 @@ The three easiest ways to get around this:
 
 	```console
 	$ docker volume create pgdata
-	$ docker run -it --rm -v pgdata:/var/lib/postgresql/data postgres
+	$ docker run -it --rm -v pgdata:/var/lib/postgresql/data arm32v5/postgres
 	The files belonging to this database system will be owned by user "postgres".
 	...
 	( once it's finished initializing successfully and is waiting for connections, stop it )
 	$ docker run -it --rm -v pgdata:/var/lib/postgresql/data bash chown -R 1000:1000 /var/lib/postgresql/data
-	$ docker run -it --rm --user 1000:1000 -v pgdata:/var/lib/postgresql/data postgres
+	$ docker run -it --rm --user 1000:1000 -v pgdata:/var/lib/postgresql/data arm32v5/postgres
 	LOG:  database system was shut down at 2017-01-20 00:03:23 UTC
 	LOG:  MultiXact member wraparound protections are now enabled
 	LOG:  autovacuum launcher started
@@ -293,7 +289,7 @@ See ["IPVS connection timeout issue" in the Docker Success Center](https://succe
 
 ## Where to Store Data
 
-Important note: There are several ways to store data used by applications that run in Docker containers. We encourage users of the `postgres` images to familiarize themselves with the options available, including:
+Important note: There are several ways to store data used by applications that run in Docker containers. We encourage users of the `arm32v5/postgres` images to familiarize themselves with the options available, including:
 
 -	Let Docker manage the storage of your database data [by writing the database files to disk on the host system using its own internal volume management](https://docs.docker.com/engine/tutorials/dockervolumes/#adding-a-data-volume). This is the default and is easy and fairly transparent to the user. The downside is that the files may be hard to locate for tools and applications that run directly on the host system, i.e. outside containers.
 -	Create a data directory on the host system (outside the container) and [mount this to a directory visible from inside the container](https://docs.docker.com/engine/tutorials/dockervolumes/#mount-a-host-directory-as-a-data-volume). This places the database files in a known location on the host system, and makes it easy for tools and applications on the host system to access the files. The downside is that the user needs to make sure that the directory exists, and that e.g. directory permissions and other security mechanisms on the host system are set up correctly.
@@ -301,29 +297,13 @@ Important note: There are several ways to store data used by applications that r
 The Docker documentation is a good starting point for understanding the different storage options and variations, and there are multiple blogs and forum postings that discuss and give advice in this area. We will simply show the basic procedure here for the latter option above:
 
 1.	Create a data directory on a suitable volume on your host system, e.g. `/my/own/datadir`.
-2.	Start your `postgres` container like this:
+2.	Start your `arm32v5/postgres` container like this:
 
 	```console
-	$ docker run --name some-postgres -v /my/own/datadir:/var/lib/postgresql/data -d postgres:tag
+	$ docker run --name some-postgres -v /my/own/datadir:/var/lib/postgresql/data -d arm32v5/postgres:tag
 	```
 
 The `-v /my/own/datadir:/var/lib/postgresql/data` part of the command mounts the `/my/own/datadir` directory from the underlying host system as `/var/lib/postgresql/data` inside the container, where PostgreSQL by default will write its data files.
-
-# Image Variants
-
-The `postgres` images come in many flavors, each designed for a specific use case.
-
-## `postgres:<version>`
-
-This is the defacto image. If you are unsure about what your needs are, you probably want to use this one. It is designed to be used both as a throw away container (mount your source code and start the container to start your app), as well as the base to build other images off of.
-
-## `postgres:<version>-alpine`
-
-This image is based on the popular [Alpine Linux project](http://alpinelinux.org), available in [the `alpine` official image](https://hub.docker.com/_/alpine). Alpine Linux is much smaller than most distribution base images (~5MB), and thus leads to much slimmer images in general.
-
-This variant is highly recommended when final image size being as small as possible is desired. The main caveat to note is that it does use [musl libc](http://www.musl-libc.org) instead of [glibc and friends](http://www.etalabs.net/compare_libcs.html), so certain software might run into issues depending on the depth of their libc requirements. However, most software doesn't have an issue with this, so this variant is usually a very safe choice. See [this Hacker News comment thread](https://news.ycombinator.com/item?id=10782897) for more discussion of the issues that might arise and some pro/con comparisons of using Alpine-based images.
-
-To minimize image size, it's uncommon for additional related tools (such as `git` or `bash`) to be included in Alpine-based images. Using this image as a base, add the things you need in your own Dockerfile (see the [`alpine` image description](https://hub.docker.com/_/alpine/) for examples of how to install packages if you are unfamiliar).
 
 # License
 
